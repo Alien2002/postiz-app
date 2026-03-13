@@ -4,8 +4,9 @@ import compression from 'compression';
 
 import { loadSwagger } from '@gitroom/helpers/swagger/load.swagger';
 import { json } from 'express';
-import { Runtime } from '@temporalio/worker';
-Runtime.install({ shutdownSignals: [] });
+// Temporal's default shutdown behavior is to listen for SIGINT and SIGTERM, but in some environments (like Docker) these signals may not be sent. By installing a custom runtime with no shutdown signals, we can prevent the worker from shutting down unexpectedly. This is especially important if Temporal is enabled, as it allows the worker to continue processing tasks without interruption.
+// import { Runtime } from '@temporalio/worker';
+// Runtime.install({ shutdownSignals: [] });
 
 process.env.TZ = 'UTC';
 
@@ -72,7 +73,7 @@ async function start() {
 
     Logger.log(`🚀 Backend is running on: http://localhost:${port}`);
   } catch (e) {
-    Logger.error(`Backend failed to start on port ${port}`, e);
+    Logger.error(`Backend failed to start on port... ${port}`, e);
   }
 }
 

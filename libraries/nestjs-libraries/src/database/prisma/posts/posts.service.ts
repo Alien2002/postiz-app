@@ -26,8 +26,8 @@ import { Readable } from 'stream';
 import { OpenaiService } from '@gitroom/nestjs-libraries/openai/openai.service';
 dayjs.extend(utc);
 import * as Sentry from '@sentry/nestjs';
-import { TemporalService } from 'nestjs-temporal-core';
-import { TypedSearchAttributes } from '@temporalio/common';
+// import { TemporalService } from 'nestjs-temporal-core';
+// import { TypedSearchAttributes } from '@temporalio/common';
 import {
   organizationId,
   postId as postIdSearchParam,
@@ -53,7 +53,7 @@ export class PostsService {
     private _mediaService: MediaService,
     private _shortLinkService: ShortLinkService,
     private _openaiService: OpenaiService,
-    private _temporalService: TemporalService,
+    // private _temporalService: TemporalService,
     private _refreshIntegrationService: RefreshIntegrationService
   ) {}
 
@@ -589,28 +589,28 @@ export class PostsService {
     const post = await this._postRepository.deletePost(orgId, group);
 
     if (post?.id) {
-      try {
-        const workflows = this._temporalService.client
-          .getRawClient()
-          ?.workflow.list({
-            query: `postId="${post.id}" AND ExecutionStatus="Running"`,
-          });
+      // try {
+      //   const workflows = this._temporalService.client
+      //     .getRawClient()
+      //     ?.workflow.list({
+      //       query: `postId="${post.id}" AND ExecutionStatus="Running"`,
+      //     });
 
-        for await (const executionInfo of workflows) {
-          try {
-            const workflow =
-              await this._temporalService.client.getWorkflowHandle(
-                executionInfo.workflowId
-              );
-            if (
-              workflow &&
-              (await workflow.describe()).status.name !== 'TERMINATED'
-            ) {
-              await workflow.terminate();
-            }
-          } catch (err) {}
-        }
-      } catch (err) {}
+      //   for await (const executionInfo of workflows) {
+      //     try {
+      //       const workflow =
+      //         await this._temporalService.client.getWorkflowHandle(
+      //           executionInfo.workflowId
+      //         );
+      //       if (
+      //         workflow &&
+      //         (await workflow.describe()).status.name !== 'TERMINATED'
+      //       ) {
+      //         await workflow.terminate();
+      //       }
+      //     } catch (err) {}
+      //   }
+      // } catch (err) {}
     }
 
     return { error: true };
@@ -630,58 +630,58 @@ export class PostsService {
     orgId: string,
     state: State
   ) {
-    try {
-      const workflows = this._temporalService.client
-        .getRawClient()
-        ?.workflow.list({
-          query: `postId="${postId}" AND ExecutionStatus="Running"`,
-        });
+    // try {
+    //   const workflows = this._temporalService.client
+    //     .getRawClient()
+    //     ?.workflow.list({
+    //       query: `postId="${postId}" AND ExecutionStatus="Running"`,
+    //     });
 
-      for await (const executionInfo of workflows) {
-        try {
-          const workflow = await this._temporalService.client.getWorkflowHandle(
-            executionInfo.workflowId
-          );
-          if (
-            workflow &&
-            (await workflow.describe()).status.name !== 'TERMINATED'
-          ) {
-            await workflow.terminate();
-          }
-        } catch (err) {}
-      }
-    } catch (err) {}
+    //   for await (const executionInfo of workflows) {
+    //     try {
+    //       const workflow = await this._temporalService.client.getWorkflowHandle(
+    //         executionInfo.workflowId
+    //       );
+    //       if (
+    //         workflow &&
+    //         (await workflow.describe()).status.name !== 'TERMINATED'
+    //       ) {
+    //         await workflow.terminate();
+    //       }
+    //     } catch (err) {}
+    //   }
+    // } catch (err) {}
 
     if (state === 'DRAFT') {
       return;
     }
 
-    try {
-      await this._temporalService.client
-        .getRawClient()
-        ?.workflow.start('postWorkflowV101', {
-          workflowId: `post_${postId}`,
-          taskQueue: 'main',
-          workflowIdConflictPolicy: 'TERMINATE_EXISTING',
-          args: [
-            {
-              taskQueue: taskQueue,
-              postId: postId,
-              organizationId: orgId,
-            },
-          ],
-          typedSearchAttributes: new TypedSearchAttributes([
-            {
-              key: postIdSearchParam,
-              value: postId,
-            },
-            {
-              key: organizationId,
-              value: orgId,
-            },
-          ]),
-        });
-    } catch (err) {}
+    // try {
+    //   await this._temporalService.client
+    //     .getRawClient()
+    //     ?.workflow.start('postWorkflowV101', {
+    //       workflowId: `post_${postId}`,
+    //       taskQueue: 'main',
+    //       workflowIdConflictPolicy: 'TERMINATE_EXISTING',
+    //       args: [
+    //         {
+    //           taskQueue: taskQueue,
+    //           postId: postId,
+    //           organizationId: orgId,
+    //         },
+    //       ],
+    //       typedSearchAttributes: new TypedSearchAttributes([
+    //         {
+    //           key: postIdSearchParam,
+    //           value: postId,
+    //         },
+    //         {
+    //           key: organizationId,
+    //           value: orgId,
+    //         },
+    //       ]),
+    //     });
+    // } catch (err) {}
   }
 
   async createPost(orgId: string, body: CreatePostDto): Promise<any[]> {

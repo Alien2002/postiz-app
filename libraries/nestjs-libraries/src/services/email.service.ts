@@ -3,13 +3,15 @@ import { EmailInterface } from '@gitroom/nestjs-libraries/emails/email.interface
 import { ResendProvider } from '@gitroom/nestjs-libraries/emails/resend.provider';
 import { EmptyProvider } from '@gitroom/nestjs-libraries/emails/empty.provider';
 import { NodeMailerProvider } from '@gitroom/nestjs-libraries/emails/node.mailer.provider';
-import { TemporalService } from 'nestjs-temporal-core';
+// import { TemporalService } from 'nestjs-temporal-core';
 import { timer } from '@gitroom/helpers/utils/timer';
 
 @Injectable()
 export class EmailService {
   emailService: EmailInterface;
-  constructor(private _temporalService: TemporalService) {
+  constructor(
+    // private _temporalService: TemporalService 
+  ) {
     this.emailService = this.selectProvider(process.env.EMAIL_PROVIDER!);
     console.log('Email service provider:', this.emailService.name);
     for (const key of this.emailService.validateEnvKeys) {
@@ -41,16 +43,17 @@ export class EmailService {
     addTo: 'top' | 'bottom',
     replyTo?: string
   ) {
-    return this._temporalService.client
-      .getRawClient()
-      ?.workflow.signalWithStart('sendEmailWorkflow', {
-        taskQueue: 'main',
-        workflowId: 'send_email',
-        signal: 'sendEmail',
-        args: [{ queue: [] }],
-        signalArgs: [{ to, subject, html, replyTo, addTo }],
-        workflowIdConflictPolicy: 'USE_EXISTING',
-      });
+    // return this._temporalService.client
+    //   .getRawClient()
+    //   ?.workflow.signalWithStart('sendEmailWorkflow', {
+    //     taskQueue: 'main',
+    //     workflowId: 'send_email',
+    //     signal: 'sendEmail',
+    //     args: [{ queue: [] }],
+    //     signalArgs: [{ to, subject, html, replyTo, addTo }],
+    //     workflowIdConflictPolicy: 'USE_EXISTING',
+    //   });
+    return this.sendEmailSync(to, subject, html, replyTo);
   }
 
   async sendEmailSync(
